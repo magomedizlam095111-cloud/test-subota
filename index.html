@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гайд по UNIX терминалу и Git/GitHub</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --muted: #475569;
+            --accent: #2563eb;
+            --accent-light: #dbeafe;
+            --code-bg: #0f172a;
+            --code-text: #e2e8f0;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --warning: #d97706;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.65;
+            color: var(--text);
+            background: var(--bg);
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        header h1 {
+            font-size: 2.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        .toc {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+        .toc h2 { margin-top: 0; font-size: 1.4rem; }
+        .toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            columns: 2;
+        }
+        .toc li { margin: 0.4rem 0; }
+        .toc a {
+            text-decoration: none;
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .toc a:hover { text-decoration: underline; }
+
+        section {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent-light);
+            padding-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        h3 { margin-top: 1.5rem; color: #1e293b; }
+
+        .cmd-block {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 0.75rem;
+            border-left: 3px solid var(--accent);
+            background: #f8fafc;
+            border-radius: 0 8px 8px 0;
+        }
+        .cmd-name {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 600;
+            color: #0f172a;
+            word-break: break-all;
+        }
+        .cmd-desc { margin: 0; }
+
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            margin: 0.5rem 0 1.5rem;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background: #e2e8f0;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .note {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+        .tip {
+            background: #dcfce7;
+            border-left: 4px solid var(--success);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .toc ul { columns: 1; }
+            .cmd-block { grid-template-columns: 1fr; gap: 0.25rem; }
+            section { padding: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>UNIX Терминал + Git/GitHub</h1>
+            <p>Краткий, структурированный справочник для ежедневной работы</p>
+        </header>
+
+        <nav class="toc">
+            <h2>📑 Содержание</h2>
+            <ul>
+                <li><a href="#unix-nav">Навигация и файловая система</a></li>
+                <li><a href="#unix-files">Работа с файлами и правами</a></li>
+                <li><a href="#unix-pipes">Конвейеры, вывод и справка</a></li>
+                <li><a href="#git-setup">Инициализация и конфигурация Git</a></li>
+                <li><a href="#git-commits">Индекс, коммиты и история</a></li>
+                <li><a href="#git-branches">Ветки и слияние</a></li>
+                <li><a href="#git-undo">Отмена изменений</a></li>
+                <li><a href="#github-remote">GitHub: удалённые репозитории</a></li>
+                <li><a href="#github-collab">Коллаборация и Pull Request</a></li>
+                <li><a href="#tips">💡 Советы и лучшие практики</a></li>
+            </ul>
+        </nav>
+
+        <section id="unix-nav">
+            <h2>🐚 UNIX Терминал</h2>
+            <h3>Навигация и файловая система</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">pwd</span>
+                <p class="cmd-desc">Показать текущую директорию (Print Working Directory)</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">ls [-la]</span>
+                <p class="cmd-desc">Список файлов. <code>-l</code> подробный, <code>-a</code> скрытые файлы</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">cd [путь]</span>
+                <p class="cmd-desc">Перейти в директорию. <code>cd ..</code> на уровень вверх, <code>cd ~</code> в домашнюю</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">mkdir [-p]</span>
+                <p class="cmd-desc">Создать папку. <code>-p</code> создаёт промежуточные папки автоматически</p>
+            </div>
+
+            <pre><code># Примеры
+pwd
+ls -la
+cd ~/projects
+mkdir -p src/components/utils</code></pre>
+        </section>
+
+        <section id="unix-files">
+            <h3>Работа с файлами и правами</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">touch файл</span>
+                <p class="cmd-desc">Создать пустой файл или обновить timestamp</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">cp [-r]</span>
+                <p class="cmd-desc">Копировать. <code>-r</code> рекурсивно для папок</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">mv</span>
+                <p class="cmd-desc">Переместить или переименовать файл/папку</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">rm [-rf]</span>
+                <p class="cmd-desc">Удалить. <span class="badge">Осторожно</span> <code>-rf</code> удаляет без подтверждения</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">chmod/chown</span>
+                <p class="cmd-desc">Изменить права и владельца. Пример: <code>chmod +x script.sh</code></p>
+            </div>
+
+            <pre><code>cp config.yaml backup/
+mv old_name.txt new_name.txt
+rm -rf node_modules
+chmod 644 index.html
+chown user:group project/</code></pre>
+        </section>
+
+        <section id="unix-pipes">
+            <h3>Конвейеры, вывод и справка</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">cat/head/tail</span>
+                <p class="cmd-desc">Вывод содержимого. <code>head -n 5</code> первые 5 строк, <code>tail -f</code> следить за логами</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">grep [шаблон]</span>
+                <p class="cmd-desc">Поиск текста в файлах/выводе. <code>-i</code> без учёта регистра, <code>-r</code> рекурсия</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">| &gt; &gt;&gt;</span>
+                <p class="cmd-desc"><code>|</code> конвейер, <code>&gt;</code> перезаписать файл, <code>&gt;&gt;</code> добавить в конец</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">man / --help</span>
+                <p class="cmd-desc">Встроенная документация. <code>man ls</code> или <code>git commit --help</code></p>
+            </div>
+
+            <pre><code>cat error.log | grep "ERROR" > critical.log
+tail -f /var/log/syslog
+ls -l | sort -k5 -rn | head -n 10</code></pre>
+        </section>
+
+        <section id="git-setup">
+            <h2>🔹 Git & GitHub</h2>
+            <h3>Инициализация и конфигурация</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">git init</span>
+                <p class="cmd-desc">Создать новый пустой репозиторий в текущей папке</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git clone [url]</span>
+                <p class="cmd-desc">Склонировать удалённый репозиторий локально</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git config</span>
+                <p class="cmd-desc">Настроить имя, email, редактор по умолчанию</p>
+            </div>
+
+            <pre><code>git config --global user.name "Ivan Petrov"
+git config --global user.email "ivan@example.com"
+git config --global core.editor "vim"
+git config --global init.defaultBranch main</code></pre>
+        </section>
+
+        <section id="git-commits">
+            <h3>Индекс, коммиты и история</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">git status</span>
+                <p class="cmd-desc">Текущее состояние: изменённые, новые, удалённые файлы</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git add [файл|.]</span>
+                <p class="cmd-desc">Добавить в индекс (staging area)</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git commit [-m]</span>
+                <p class="cmd-desc">Сохранить снимок. <code>-m "сообщение"</code> без открытия редактора</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git log [--oneline]</span>
+                <p class="cmd-desc">История коммитов. <code>--graph --all</code> для визуализации веток</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git diff</span>
+                <p class="cmd-desc">Показать изменения: рабочие файлы vs индекс / индекс vs HEAD</p>
+            </div>
+
+            <pre><code>git status
+git add src/app.js styles.css
+git commit -m "fix: корректная обработка 404"
+git log --oneline --graph --decorate</code></pre>
+        </section>
+
+        <section id="git-branches">
+            <h3>Ветки и слияние</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">git branch [-a]</span>
+                <p class="cmd-desc">Список локальных веток. <code>-a</code> показывает удалённые</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git switch / checkout</span>
+                <p class="cmd-desc">Переключиться на ветку. <code>switch</code> — современный аналог <code>checkout</code></p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git merge [ветка]</span>
+                <p class="cmd-desc">Слить указанную ветку в текущую</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git rebase [ветка]</span>
+                <p class="cmd-desc">Переместить коммиты поверх указанной ветки (линейная история)</p>
+            </div>
+
+            <pre><code>git branch feature/auth
+git switch feature/auth
+# ... работа ...
+git switch main
+git merge feature/auth
+# или
+git rebase main  # в ветке feature/auth</code></pre>
+        </section>
+
+        <section id="git-undo">
+            <h3>Отмена изменений</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">git restore [файл]</span>
+                <p class="cmd-desc">Вернуть файл в состояние последнего коммита (рабочая область)</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git restore --staged</span>
+                <p class="cmd-desc">Убрать из индекса, не меняя рабочую копию</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git commit --amend</span>
+                <p class="cmd-desc">Дополнить последний коммит (сообщение или файлы)</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git reset [--soft/mixed/hard]</span>
+                <p class="cmd-desc">Сдвинуть HEAD. <code>--hard</code> удаляет изменения, используйте аккуратно</p>
+            </div>
+
+            <pre><code>git restore index.html
+git restore --staged logo.png
+git commit --amend -m "fix: обновить логотип"
+git reset HEAD~1  # отменяет коммит, оставляя файлы в индексе</code></pre>
+        </section>
+
+        <section id="github-remote">
+            <h2>🌐 GitHub Интеграция</h2>
+            <h3>Удалённые репозитории и синхронизация</h3>
+            <div class="cmd-block">
+                <span class="cmd-name">git remote add origin [url]</span>
+                <p class="cmd-desc">Привязать удалённый репозиторий с псевдонимом <code>origin</code></p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git push [-u] origin [ветка]</span>
+                <p class="cmd-desc">Отправить изменения. <code>-u</code> запомнит связь веток для последующих <code>git push</code></p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git pull</span>
+                <p class="cmd-desc"><code>fetch</code> + <code>merge</code>. Скачивает и сразу сливает изменения</p>
+            </div>
+            <div class="cmd-block">
+                <span class="cmd-name">git fetch</span>
+                <p class="cmd-desc">Только скачивает изменения, не меняет рабочую директорию</p>
+            </div>
+
+            <pre><code>git remote add origin git@github.com:user/repo.git
+git push -u origin main
+git fetch origin
+git checkout -b feature/x origin/feature/x</code></pre>
+
+            <div class="note">
+                <strong>SSH vs HTTPS:</strong> Для работы без ввода пароля настройте SSH-ключ:
+                <code>ssh-keygen -t ed25519</code> → добавьте публичный ключ в GitHub → <code>git remote set-url origin git@github.com:user/repo.git</code>
+            </div>
+        </section>
+
+        <section id="github-collab">
+            <h3>Коллаборация и Pull Request</h3>
+            <ol>
+                <li><code>Fork</code> репозитория на GitHub</li>
+                <li><code>git clone</code> своей копии</li>
+                <li>Создать ветку: <code>git checkout -b feat/my-change</code></li>
+                <li>Внести правки, закоммитить и отправить: <code>git push origin feat/my-change</code></li>
+                <li>На GitHub нажать <strong>Compare & pull request</strong></li>
+                <li>Добавить описание, теги, ревьюеров → <strong>Create pull request</strong></li>
+            </ol>
+
+            <div class="tip">
+                <strong>Синхронизация с оригиналом:</strong>
+                <pre><code>git remote add upstream https://github.com/original/repo.git
+git fetch upstream
+git switch main
+git merge upstream/main</code></pre>
+            </div>
+        </section>
+
+        <section id="tips">
+            <h2>💡 Советы и лучшие практики</h2>
+            <ul>
+                <li>Используйте <code>.gitignore</code> для исключения <code>node_modules/</code>, <code>.env</code>, <code>dist/</code>, IDE-файлов.</li>
+                <li>Пишите осмысленные сообщения коммитов. Рекомендуется формат <code>тип(область): описание</code> (Conventional Commits).</li>
+                <li>Часто пушьте небольшие изменения. Это упрощает ревью и откат.</li>
+                <li>Не коммитьте в <code>main</code> напрямую. Работайте в ветках.</li>
+                <li>Проверяйте <code>git status</code> перед <code>add</code> и <code>commit</code>.</li>
+                <li>Для отмены <strong>только локальных</strong> экспериментов используйте <code>git stash</code>.</li>
+                <li>Никогда не используйте <code>git push --force</code> в общих ветках. Если нужно — <code>--force-with-lease</code>.</li>
+            </ul>
+
+            <div class="note">
+                <strong>Как учиться дальше?</strong> В терминале всегда доступны: <code>man [команда]</code>, <code>[команда] --help</code>, <code>git help [subcommand]</code>.
+                Для Git: <code>git help workflows</code>, <code>git help everyday</code>.
+            </div>
+        </section>
+
+        <footer>
+            <p>Гайд актуален для UNIX-подобных систем (Linux, macOS, WSL) и Git 2.40+. <br>
+            Сохраните этот файл как <code>terminal-git-guide.html</code> и откройте в браузере.</p>
+        </footer>
+    </div>
+</body>
+</html>
